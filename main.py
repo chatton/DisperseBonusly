@@ -3,22 +3,46 @@ import os
 import sys
 import requests
 
+BASE_URL = "https://bonus.ly/api/v1"
+BONUS_URL = f"{BASE_URL}/bonuses"
+MY_URL = f"{BASE_URL}/users/me"
 
-def main() -> int:
-    access_token = os.getenv("ACCESS_TOKEN")
-    url = "https://bonus.ly/api/v1/bonuses"
-    data = json.dumps({
-        "reason": "+1 @<user> bonusly api test!"
-    })
+
+def _load_recipients():
+    recipients = os.getenv("RECIPIENTS")
+    return json.loads(recipients)
+
+
+def _get_giving_amount(access_token: str):
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
         "User-Agent": "python",
     }
-    res = requests.post(url, data=data, headers=headers)
+    res = requests.get(MY_URL, headers=headers)
     res.raise_for_status()
-    j = res.json()
-    print(json.dumps(j, indent=4))
+    return int(res.json()["result"]["giving_balance"])
+
+
+def main() -> int:
+    access_token = os.getenv("ACCESS_TOKEN")
+    message = os.getenv("BONUSLY_MESSAGE")
+    recipients = _load_recipients()
+    giving_amount = _get_giving_amount(access_token)
+    amount_per_member = giving_amount // len(recipients)
+    for recipient in _load_recipients():
+        data = json.dumps({
+            "reason": f"+{amount_per_member} @{recipient} {message}"
+        })
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+            "User-Agent": "python",
+        }
+        res = requests.post(BONUS_URL, data=data, headers=headers)
+        if res.status_code != 200:
+            print("Error attempting to give bonusly: [{}]: {}".format(res.status_code, res.reason))
+
     return 0
 
 
