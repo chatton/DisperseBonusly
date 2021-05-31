@@ -1,0 +1,19 @@
+on:
+  schedule:
+    - cron:  '0 14 30 * *' # 30th of each month
+
+jobs:
+  disperse-bonusly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - run: pip install -r requirements.txt
+      - run: python main.py
+        env:
+          RECIPIENTS: ${{ secrets.RECIPIENTS }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BONUSLY_MESSAGE: ${{ secrets.BONUSLY_MESSAGE }}
