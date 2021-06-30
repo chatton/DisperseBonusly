@@ -42,8 +42,10 @@ def main() -> int:
         amount_per_member = 1
 
     for recipient in recipients:
+        reason =f"+{amount_per_member} @{recipient} {message}"
+        print(reason)
         data = json.dumps({
-            "reason": f"+{amount_per_member} @{recipient} {message}"
+            "reason": reason,
         })
         headers = {
             "Authorization": f"Bearer {access_token}",
