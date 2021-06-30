@@ -2,7 +2,8 @@ import json
 import os
 import sys
 import requests
-import random
+
+from disperse_bonsuly.reason import generate_reason
 
 BASE_URL = "https://bonus.ly/api/v1"
 BONUS_URL = f"{BASE_URL}/bonuses"
@@ -30,31 +31,19 @@ def main() -> int:
     message = os.getenv("BONUSLY_MESSAGE")
     recipients = _load_recipients()
     giving_amount = _get_giving_amount(access_token)
-    amount_per_member = giving_amount // len(recipients)
 
-    recipients = _load_recipients()
-    random.shuffle(recipients)
+    reason = generate_reason(giving_amount, message, recipients)
 
-    if amount_per_member == 0 and giving_amount > 0:
-        # more people than points to give
-        recipients = recipients[:giving_amount]
-        # give one of the remaining points to everyone!
-        amount_per_member = 1
-
-    for recipient in recipients:
-        reason = f"+{amount_per_member} @{recipient} {message}"
-        data = json.dumps({
-            "reason": reason,
-        })
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-            "User-Agent": "python",
-        }
-        res = requests.post(BONUS_URL, data=data, headers=headers)
-        if res.status_code != 200:
-            print("Error attempting to give bonusly: [{}]: {}".format(res.status_code, res.reason))
-
+    data = json.dumps({
+        "reason": reason,
+    })
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+        "User-Agent": "python",
+    }
+    res = requests.post(BONUS_URL, data=data, headers=headers)
+    res.raise_for_status()
     return 0
 
 
