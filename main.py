@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import requests
+import random
 
 BASE_URL = "https://bonus.ly/api/v1"
 BONUS_URL = f"{BASE_URL}/bonuses"
@@ -30,7 +31,17 @@ def main() -> int:
     recipients = _load_recipients()
     giving_amount = _get_giving_amount(access_token)
     amount_per_member = giving_amount // len(recipients)
-    for recipient in _load_recipients():
+
+    recipients = _load_recipients()
+    random.shuffle(recipients)
+
+    if amount_per_member == 0 and giving_amount > 0:
+        # more people than points to give
+        recipients = recipients[:giving_amount]
+        # give one of the remaining points to everyone!
+        amount_per_member = 1
+
+    for recipient in recipients:
         data = json.dumps({
             "reason": f"+{amount_per_member} @{recipient} {message}"
         })
