@@ -42,8 +42,7 @@ def main() -> int:
         amount_per_member = 1
 
     for recipient in recipients:
-        reason =f"+{amount_per_member} @{recipient} {message}"
-        print(reason)
+        reason = f"+{amount_per_member} @{recipient} {message}"
         data = json.dumps({
             "reason": reason,
         })
