@@ -5,7 +5,7 @@ on:
 
 jobs:
   disperse-bonusly:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
